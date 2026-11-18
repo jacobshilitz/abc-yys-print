@@ -31,3 +31,5 @@ OTHER FILES
   yys_print.html   the YYS Print page: type any words and see them in our letters
   yys_print.py     the letter shapes (used to make the practice sheets and the fonts)
   build_fonts.py   rebuilds the four fonts (into the "fonts" folder) after a letter is changed
+  requirements.txt what build_fonts.py needs. Install once with:
+                     python -m pip install -r requirements.txt
