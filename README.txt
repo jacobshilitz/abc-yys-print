@@ -1,8 +1,8 @@
 YYS Print - our school letters                                   Credit: YYS
 ============================================================================
 
-FONTS (for typing in Word)
-  YYSPrint.ttf            solid letters
+FONTS (for typing in Word) - in the "fonts" folder
+  YYSPrint.ttf          solid letters
   YYSPrintDots.ttf        dotted letters, for tracing
   YYSPrintLined.ttf       solid letters with the three handwriting lines built in
   YYSPrintDotsLined.ttf   dotted letters with the three lines built in
@@ -30,4 +30,4 @@ THE RULES EVERY LETTER FOLLOWS
 OTHER FILES
   yys_print.html   the YYS Print page: type any words and see them in our letters
   yys_print.py     the letter shapes (used to make the practice sheets and the fonts)
-  build_fonts.py   rebuilds the four fonts after a letter is changed
+  build_fonts.py   rebuilds the four fonts (into the "fonts" folder) after a letter is changed

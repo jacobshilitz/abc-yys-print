@@ -199,9 +199,10 @@ def build(family, dotted, lined, path):
 
 if __name__ == '__main__':
     import os
-    os.makedirs('fonts_out', exist_ok=True)
+    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')
+    os.makedirs(out_dir, exist_ok=True)
     for fam, dotted, lined in [('YYS Print', False, False), ('YYS Print Dots', True, False),
                                ('YYS Print Lined', False, True), ('YYS Print Dots Lined', True, True)]:
-        p = f"fonts_out/{fam.replace(' ', '')}.ttf"
+        p = os.path.join(out_dir, f"{fam.replace(' ', '')}.ttf")
         build(fam, dotted, lined, p)
         print('built', p, os.path.getsize(p) // 1024, 'KB')
