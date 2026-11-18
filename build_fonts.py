@@ -1,10 +1,10 @@
 """Build installable YYS Print fonts (.ttf) from yys_print.py.
 
 Four fonts:
-  YYS Print            solid letters (touch the dotted line)
-  YYS Print Dots       dotted letters for tracing (small letters stop just below the dotted line)
-  YYS Print Lined      solid letters with the three handwriting lines built in
-  YYS Print Dots Lined dotted letters with the three lines built in
+  ABC YYS Print            solid letters (touch the dotted line)
+  ABC YYS Print Dots       dotted letters for tracing (small letters stop just below the dotted line)
+  ABC YYS Print Lined      solid letters with the three handwriting lines built in
+  ABC YYS Print Dots Lined dotted letters with the three lines built in
 The dot rules are the same as on the YYS Print page.
 """
 import math
@@ -201,8 +201,8 @@ if __name__ == '__main__':
     import os
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')
     os.makedirs(out_dir, exist_ok=True)
-    for fam, dotted, lined in [('YYS Print', False, False), ('YYS Print Dots', True, False),
-                               ('YYS Print Lined', False, True), ('YYS Print Dots Lined', True, True)]:
+    for fam, dotted, lined in [('ABC YYS Print', False, False), ('ABC YYS Print Dots', True, False),
+                               ('ABC YYS Print Lined', False, True), ('ABC YYS Print Dots Lined', True, True)]:
         p = os.path.join(out_dir, f"{fam.replace(' ', '')}.ttf")
         build(fam, dotted, lined, p)
         print('built', p, os.path.getsize(p) // 1024, 'KB')

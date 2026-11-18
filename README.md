@@ -8,18 +8,18 @@ The fonts are in the [`fonts`](fonts) folder.
 
 | File | What it is |
 | --- | --- |
-| `YYSPrint.ttf` | solid letters |
-| `YYSPrintDots.ttf` | dotted letters, for tracing |
-| `YYSPrintLined.ttf` | solid letters with the three handwriting lines built in |
-| `YYSPrintDotsLined.ttf` | dotted letters with the three lines built in |
+| `ABCYYSPrint.ttf` | solid letters |
+| `ABCYYSPrintDots.ttf` | dotted letters, for tracing |
+| `ABCYYSPrintLined.ttf` | solid letters with the three handwriting lines built in |
+| `ABCYYSPrintDotsLined.ttf` | dotted letters with the three lines built in |
 
 ## How to install (Windows)
 
 1. Open the `fonts` folder.
 2. Right-click each `.ttf` file and choose **Install** (or **Install for all users**).
 3. Close Word and open it again.
-4. In Word, pick the font by name: **YYS Print**, **YYS Print Dots**,
-   **YYS Print Lined** or **YYS Print Dots Lined**.
+4. In Word, pick the font by name: **ABC YYS Print**, **ABC YYS Print Dots**,
+   **ABC YYS Print Lined** or **ABC YYS Print Dots Lined**.
 
 ## How to reinstall (after the fonts are rebuilt)
 
@@ -27,12 +27,16 @@ Windows keeps using the old copy until it is removed, so take the old fonts out 
 
 1. Close Word, and any other program that uses the fonts.
 2. Open **Settings → Personalization → Fonts**.
-3. Search for **YYS Print**. Click each of the four fonts and choose **Uninstall**.
+3. Search for **YYS Print**. Click each font it finds and choose **Uninstall**.
+   This also removes the old fonts from before the rename (called just "YYS Print").
 4. Install the new files from the `fonts` folder, as described above.
 5. Open Word again.
 
 If Windows says a font is in use, restart the computer and uninstall it again
 before opening Word.
+
+Word documents made with the old names ("YYS Print", "YYS Print Dots", and so on)
+need the text selected and the font changed to the new "ABC" name.
 
 ## Tips for Word
 
