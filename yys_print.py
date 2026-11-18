@@ -15,7 +15,7 @@ SPACE = 1.0         # word space
 
 
 XH = 1.0             # solid letters touch the dotted line; use XH_DOTTED for dotted tracing letters
-XH_DOTTED = 0.97     # dotted: small letters and middle bars stop just below the dotted line (like KG Primary Dots)
+XH_DOTTED = 0.97     # dotted: small letters and middle bars stop just below the dotted line
 
 
 def ymap(y, xh=XH):
@@ -55,6 +55,15 @@ def spline(pts, n=8):
 
 DOT = lambda x: line((x, 1.32), (x, 1.5))   # short upright dash, a small gap above the stem
 
+
+def s_curve(k):
+    """S at scale k (1 = capital, 0.5 = small s): round top bowl, straight slanted middle,
+    slightly bigger round bottom bowl, tips stopping a little before level.
+    247.5 / 67.2 are where the straight middle meets each bowl so the joins are smooth."""
+    cx = 0.56
+    pts = arc(cx, 2 - 0.46, 0.50, 20, 247.5, ry=0.46) + arc(cx, 0.50, 0.55, 67.2, -160, ry=0.50)
+    return [(x * k, y * k) for x, y in pts]
+
 G = {}   # char -> (strokes, width)
 
 # ---------------- lowercase (x-height 1) ----------------
@@ -78,8 +87,8 @@ G['o'] = ([circle(0.5, 0.5, 0.5)], 1.0)
 G['p'] = ([line((0, 1), (0, TAIL)), circle(0.5, 0.5, 0.5)], 1.0)
 G['q'] = ([circle(0.5, 0.5, 0.5), line((1, 1), (1, TAIL))], 1.0)
 G['r'] = ([line((0, 1), (0, 0)), line((0, 0.5)) + arc(0.5, 0.5, 0.5, 180, 50)[1:]], 0.82)
-G['s'] = ([spline([(0.786, 0.786), (0.714, 0.929), (0.5, 1.0), (0.286, 1.0), (0.071, 0.929), (0.0, 0.786), (0.071, 0.643), (0.214, 0.571), (0.571, 0.5), (0.714, 0.429), (0.786, 0.286), (0.786, 0.214), (0.714, 0.071), (0.5, 0.0), (0.286, 0.0), (0.071, 0.071), (0.0, 0.214)])], 0.79)   # Hershey shape, smoothed
-G['t'] = ([line((0.35, 1.55), (0.35, 0.3)) + arc(0.65, 0.3, 0.3, 180, 270)[1:] + [(0.78, 0)], line((0, 1), (0.75, 1))], 0.8)   # curved foot, like Hershey; low top, about halfway up the top space
+G['s'] = ([s_curve(0.5)], 0.56)   # same shape as S, half size
+G['t'] = ([line((0.35, 1.55), (0.35, 0.3)) + arc(0.65, 0.3, 0.3, 180, 270)[1:] + [(0.78, 0)], line((0, 1), (0.75, 1))], 0.8)   # curved foot; low top, about halfway up the top space
 G['u'] = ([line((0, 1), (0, 0.5)) + arc(0.5, 0.5, 0.5, 180, 360)[1:], line((1, 1), (1, 0))], 1.0)
 G['v'] = ([line((0, 1), (0.5, 0), (1, 1))], 1.0)
 G['w'] = ([line((0, 1), (0.33, 0), (0.66, 1), (0.99, 0), (1.32, 1))], 1.32)
@@ -108,7 +117,7 @@ G['O'] = ([circle(1, 1, 1)], 2.0)
 G['P'] = ([line((0, 0), (0, 2), (0.7, 2)) + arc(0.7, 1.5, 0.5, 90, -90)[1:] + [(0, 1)]], 1.2)
 G['Q'] = ([circle(1, 1, 1), line((1.25, 0.45), (1.9, -0.1))], 2.0)
 G['R'] = ([line((0, 0), (0, 2), (0.7, 2)) + arc(0.7, 1.5, 0.5, 90, -90)[1:] + [(0, 1)], line((0.5, 1), (1.25, 0))], 1.25)
-G['S'] = ([spline([(1.333, 1.714), (1.143, 1.905), (0.857, 2.0), (0.476, 2.0), (0.19, 1.905), (0.0, 1.714), (0.0, 1.524), (0.095, 1.333), (0.19, 1.238), (0.381, 1.143), (0.952, 0.952), (1.143, 0.857), (1.238, 0.762), (1.333, 0.571), (1.333, 0.286), (1.143, 0.095), (0.857, 0.0), (0.476, 0.0), (0.19, 0.095), (0.0, 0.286)])], 1.33)   # Hershey shape, smoothed
+G['S'] = ([s_curve(1)], 1.12)
 G['T'] = ([line((0, 2), (1.4, 2)), line((0.7, 2), (0.7, 0))], 1.4)
 G['U'] = ([line((0, 2), (0, 0.65)) + arc(0.65, 0.65, 0.65, 180, 360)[1:] + [(1.3, 2)]], 1.3)
 G['V'] = ([line((0, 2), (0.75, 0), (1.5, 2))], 1.5)
