@@ -1,8 +1,8 @@
 """Build installable YYS Print fonts (.ttf) from yys_print.py.
 
 Four fonts:
-  ABC YYS Print            solid letters (touch the dotted line)
-  ABC YYS Print Dots       dotted letters for tracing (small letters stop just below the dotted line)
+  ABC YYS Print            solid letters (small letters touch the dotted line)
+  ABC YYS Print Dots       dotted letters for tracing (same heights as the solid letters)
   ABC YYS Print Lined      solid letters with the three handwriting lines built in
   ABC YYS Print Dots Lined dotted letters with the three lines built in
 The dot rules are the same as on the YYS Print page.
@@ -17,8 +17,8 @@ import yys_print as Y
 U = 350                      # one line space (bottom line -> dotted line) in font units
 UPM = 1000
 STROKE = 0.12 * U            # solid pen width (same ratio as the page)
-SW = 0.085 * U               # dot diameter
-STEP = U / (2 * max(1, round(U / (2 * SW * 2.0))))   # dot spacing that fits the lines exactly
+SW = 0.11 * U                # dot diameter: big enough to see and to survive a photocopier
+STEP = U / 6                 # dot spacing: close enough that small letters (s, t, ?) still read as letters
 LINE_W = 10                  # guide line thickness
 SIDE = Y.GAP / 2             # side bearing on each side, in line units
 DESC = int(1.25 * U)         # room below the baseline (tails + bottom of lined fonts)
@@ -173,7 +173,7 @@ def build(family, dotted, lined, path):
         metrics[names[c]] = (adv, 0)
     fb = FontBuilder(UPM, isTTF=True)
     fb.setupGlyphOrder(order)
-    fb.setupCharacterMap({ord(c): names[c] for c in chars})
+    fb.setupCharacterMap({**{ord(c): names[c] for c in chars}, 0xA0: 'space'})   # Word's no-break space looks like a space
     fb.setupGlyf(glyphs)
     gl = fb.font['glyf']
     hm = {}

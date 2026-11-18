@@ -21,33 +21,30 @@ The fonts are in the [`fonts`](fonts) folder.
 4. In Word, pick the font by name: **ABC YYS Print**, **ABC YYS Print Dots**,
    **ABC YYS Print Lined** or **ABC YYS Print Dots Lined**.
 
-## How to reinstall (after the fonts are rebuilt)
+On a school computer, **Install for all users** asks for an administrator password.
+Plain **Install** puts the fonts on your own account only, and usually needs no password.
+If both are blocked, ask whoever looks after the school's computers to install them.
 
-Windows keeps using the old copy until it is removed, so take the old fonts out first:
+## What you can type
 
-1. Close Word, and any other program that uses the fonts.
-2. Open **Settings → Personalization → Fonts**.
-3. Search for **YYS Print**. Click each font it finds and choose **Uninstall**.
-   This also removes the old fonts from before the rename (called just "YYS Print").
-4. Install the new files from the `fonts` folder, as described above.
-5. Open Word again.
+- Letters **A–Z** and **a–z**, and numbers **0–9**
+- Marks: `. , ? ! : ; ' ’ ‘ " “ ” - – — ( ) + = % & # / …`
 
-If Windows says a font is in use, restart the computer and uninstall it again
-before opening Word.
-
-Word documents made with the old names ("YYS Print", "YYS Print Dots", and so on)
-need the text selected and the font changed to the new "ABC" name.
+Word's curly quotes and apostrophes, and the long dash Word makes from " - ", are included.
+Other characters (for example é, @ or $) are not in the fonts, so Word shows them in a different font.
 
 ## Tips for Word
 
-- Lined fonts: use a big size (36–72) so the boys have room to write.
+- Lined fonts: use a big size (36–72) so the kids have room to write.
 - Lined fonts: set line spacing to **Single** so the lines don't get cut.
 - Spaces also have the lines, so a whole line of text stays lined.
+- Sending a worksheet to someone else, or printing it from another computer: in Word go to
+  **File → Options → Save** and tick **Embed fonts in the file**. Otherwise a computer
+  without the fonts shows the worksheet in a different font.
 
 ## The rules every letter follows
 
-- Small letters go from the bottom line up to the dotted line
-  (in the dotted fonts they stop just below it, so the dots stay easy to see).
+- Small letters go from the bottom line up to the dotted line, in the solid and the dotted fonts alike.
 - Capitals, tall letters and numbers go from the bottom line up to the top line.
 - Bars of A E F H G, middles of B P R, and where K and Y meet sit on the dotted line.
 - Tails of g j p q y go below the bottom line.
@@ -72,7 +69,8 @@ After a letter is changed in `yys_print.py`, rebuild the four fonts:
 
    The new fonts are saved into the `fonts` folder, replacing the old ones.
 
-3. Reinstall them in Windows (see [How to reinstall](#how-to-reinstall-after-the-fonts-are-rebuilt)).
+3. On each computer that has the old fonts: close Word, open **Settings → Personalization → Fonts**,
+   search for **YYS Print**, uninstall each one, then install the new files.
 
 ## Other files
 

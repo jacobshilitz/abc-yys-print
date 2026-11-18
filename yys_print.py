@@ -4,7 +4,7 @@ Units: baseline y=0, dotted middle line y=1, top line y=2, tails go down to y=-0
 Every glyph is a list of strokes (polylines). Rules:
   - small letters fill 0..1, tall letters / capitals / digits fill 0..2
   - bars of A E F H, middles of B P R K Y, bar of G, 4 and the meeting point of K sit on y=1
-  - dot of i / j: a short upright stroke between the dotted line and the top line (1.38..1.72)
+  - dot of i / j: a short upright stroke between the dotted line and the top line (1.32..1.5)
   - q has a straight tail, Q a short straight slanted tail
 """
 import math
@@ -14,8 +14,8 @@ GAP = 0.45           # space between letters
 SPACE = 1.0         # word space
 
 
-XH = 1.0             # solid letters touch the dotted line; use XH_DOTTED for dotted tracing letters
-XH_DOTTED = 0.97     # dotted: small letters and middle bars stop just below the dotted line
+XH = 1.0             # small letters touch the dotted line
+XH_DOTTED = 1.0      # dotted tracing letters too: one height rule for kids in every font
 
 
 def ymap(y, xh=XH):
@@ -155,6 +155,25 @@ G['/'] = ([line((0, -0.1), (0.9, 2))], 0.9)
 G[':'] = ([line((0, 0), (0, 0.001)), line((0, 0.9), (0, 0.901))], 0.0)
 G["'"] = ([line((0, 2), (0, 1.55))], 0.0)
 G['#'] = ([line((0.35, 1.8), (0.25, 0.2)), line((0.85, 1.8), (0.75, 0.2)), line((0, 1.35), (1.05, 1.35)), line((0, 0.65), (1.05, 0.65))], 1.05)
+POINT = lambda x, y=0: line((x, y), (x, y + 0.001))   # a dot
+G['?'] = ([arc(0.45, 1.55, 0.45, 165, -90) + [(0.45, 0.6)], POINT(0.45)], 0.9)   # hook from the left, round over the top, down the middle
+G['!'] = ([line((0, 2), (0, 0.6)), POINT(0)], 0.0)
+G[';'] = ([POINT(0.12, 0.9), line((0.12, 0.05), (0, -0.3))], 0.12)
+G['"'] = ([line((0, 2), (0, 1.55)), line((0.3, 2), (0.3, 1.55))], 0.3)
+G['’'] = ([line((0.12, 2), (0, 1.6))], 0.12)                                  # ’  apostrophe / closing quote (Word's curly ')
+G['‘'] = ([line((0, 2), (0.12, 1.6))], 0.12)                                  # ‘  opening quote
+G['”'] = ([line((0.12, 2), (0, 1.6)), line((0.42, 2), (0.3, 1.6))], 0.42)     # ”
+G['“'] = ([line((0, 2), (0.12, 1.6)), line((0.3, 2), (0.42, 1.6))], 0.42)     # “
+G['('] = ([arc(0.9, 0.95, 0.9, 122, 238, ry=1.2)], 0.42)
+G[')'] = ([arc(-0.48, 0.95, 0.9, 58, -58, ry=1.2)], 0.42)
+G['+'] = ([line((0.45, 1.45), (0.45, 0.55)), line((0, 1), (0.9, 1))], 0.9)
+G['='] = ([line((0, 1.25), (0.9, 1.25)), line((0, 0.75), (0.9, 0.75))], 0.9)
+G['%'] = ([circle(0.25, 1.7, 0.25), line((1.1, 2), (0.1, 0)), circle(0.95, 0.3, 0.25)], 1.2)
+G['&'] = ([spline([(1.1, 0), (0.3, 1.25), (0.22, 1.7), (0.45, 1.97), (0.7, 1.75), (0.62, 1.42), (0.2, 1.0), (0.02, 0.5),
+                   (0.25, 0.05), (0.62, 0.05), (1.05, 0.6)])], 1.1)
+G['–'] = ([line((0, 0.55), (0.9, 0.55))], 0.9)                                # –  (Word turns " - " into this)
+G['—'] = ([line((0, 0.55), (1.5, 0.55))], 1.5)                                # —
+G['…'] = ([POINT(0), POINT(0.35), POINT(0.7)], 0.7)                           # …  (Word turns "..." into this)
 
 
 def layout(text, gap=GAP, space=SPACE, dotted=False):
