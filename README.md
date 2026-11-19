@@ -49,7 +49,9 @@ Other characters (for example é, @ or $) are not in the fonts, so Word shows th
 - Bars of A E F H G, middles of B P R, and where K and Y meet sit on the dotted line.
 - Tails of g j p q y go below the bottom line.
 - The small t starts about halfway up the top space and ends with a small curve.
-- The i and j dot is a short dash (two dots in the dotted fonts).
+- The i and j dot is a round dot, about halfway up the top space.
+- The q ends with a little kick to the right, so it never looks like a g.
+- The capital J has a roof: a bar across the top line.
 
 ## Rebuilding the fonts
 

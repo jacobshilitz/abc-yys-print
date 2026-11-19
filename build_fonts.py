@@ -99,20 +99,17 @@ def glyph_shape(ch, dotted):
     parts = []
     if not dotted:
         for s in S:
-            if len(s) == 2 and math.dist(s[0], s[1]) < 1e-6:
-                parts.append(Point(s[0]).buffer(STROKE * 0.6, 16))
+            if len(s) == 2 and math.dist(s[0], s[1]) < 1:      # a dot (i, j, period, colon): a bit bigger than the pen
+                parts.append(Point(s[0]).buffer(STROKE * 0.65, 16))
             else:
                 parts.append(LineString(s).buffer(STROKE / 2, 16, cap_style=1, join_style=1))
     else:
         keep = []
         for s in S:
             L = math.dist(s[0], s[-1]) if len(s) == 2 else 99 * U
-            if L < STEP * 1.2:                       # short marks: i/j dot, period, comma, colon
+            if L < STEP * 1.2:                       # short marks: i/j dot, period, comma, colon: one round dot
                 x, y = (s[0][0]+s[-1][0])/2, (s[0][1]+s[-1][1])/2
-                if y > 1.2 * U:
-                    parts += [Point(x, fy(1.36)).buffer(SW/2, 12), Point(x, fy(1.36) + STEP).buffer(SW/2, 12)]
-                else:
-                    parts.append(Point(x, y).buffer(SW*0.6, 12))
+                parts.append(Point(x, y).buffer(SW*0.6, 12))
                 continue
             keep.append(s)
         parts += [Point(p).buffer(SW/2, 12) for p in place_dots(keep, U, STEP)]

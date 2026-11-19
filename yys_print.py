@@ -4,8 +4,9 @@ Units: baseline y=0, dotted middle line y=1, top line y=2, tails go down to y=-0
 Every glyph is a list of strokes (polylines). Rules:
   - small letters fill 0..1, tall letters / capitals / digits fill 0..2
   - bars of A E F H, middles of B P R K Y, bar of G, 4 and the meeting point of K sit on y=1
-  - dot of i / j: a short upright stroke between the dotted line and the top line (1.32..1.5)
-  - q has a straight tail, Q a short straight slanted tail
+  - dot of i / j: a round dot about halfway between the dotted line and the top line (1.45)
+  - q has a straight tail with a little kick to the right at the bottom; Q a short straight slanted tail
+  - J has a roof: a bar across the top line, centred on the stem
 """
 import math
 
@@ -53,7 +54,7 @@ def spline(pts, n=8):
     return out
 
 
-DOT = lambda x: line((x, 1.32), (x, 1.5))   # short upright dash, a small gap above the stem
+DOT = lambda x: line((x, 1.45), (x, 1.451))   # round dot, about halfway up the top space
 
 
 # small s: one pen line from the top tip to the bottom tip, traced from the writing letters
@@ -94,7 +95,7 @@ G['m'] = ([line((0, 1), (0, 0)),
 G['n'] = ([line((0, 1), (0, 0)), line((0, 0.5)) + arc(0.5, 0.5, 0.5, 180, 0)[1:] + [(1, 0)]], 1.0)
 G['o'] = ([circle(0.5, 0.5, 0.5)], 1.0)
 G['p'] = ([line((0, 1), (0, TAIL)), circle(0.5, 0.5, 0.5)], 1.0)
-G['q'] = ([circle(0.5, 0.5, 0.5), line((1, 1), (1, TAIL))], 1.0)
+G['q'] = ([circle(0.5, 0.5, 0.5), line((1, 1), (1, TAIL), (1.2, TAIL + 0.2))], 1.2)   # little kick at the bottom, so q never looks like g
 G['r'] = ([line((0, 1), (0, 0)), line((0, 0.5)) + arc(0.5, 0.5, 0.5, 180, 50)[1:]], 0.82)
 G['s'] = ([S_PTS], S_W)
 G['t'] = ([line((0.35, 1.55), (0.35, 0.3)) + arc(0.65, 0.3, 0.3, 180, 270)[1:] + [(0.78, 0)], line((0, 1), (0.75, 1))], 0.8)   # curved foot; low top, about halfway up the top space
@@ -117,7 +118,7 @@ G['F'] = ([line((1.15, 2), (0, 2), (0, 0)), line((0, 1), (0.95, 1))], 1.15)
 G['G'] = ([arc(1, 1, 1, 45, 360), line((2, 1), (1.15, 1))], 2.0)
 G['H'] = ([line((0, 2), (0, 0)), line((1.35, 2), (1.35, 0)), line((0, 1), (1.35, 1))], 1.35)
 G['I'] = ([line((0.45, 2), (0.45, 0)), line((0, 2), (0.9, 2)), line((0, 0), (0.9, 0))], 0.9)
-G['J'] = ([line((1.1, 2), (1.1, 0.55)) + arc(0.55, 0.55, 0.55, 0, -180)[1:]], 1.1)
+G['J'] = ([line((1.1, 2), (1.1, 0.55)) + arc(0.55, 0.55, 0.55, 0, -180)[1:], line((0.6, 2), (1.6, 2))], 1.6)   # roof across the top, centred on the stem
 G['K'] = ([line((0, 2), (0, 0)), line((1.25, 2), (0, 1), (1.25, 0))], 1.25)
 G['L'] = ([line((0, 2), (0, 0), (1.1, 0))], 1.1)
 G['M'] = ([line((0, 0), (0, 2), (0.95, 0), (1.9, 2), (1.9, 0))], 1.9)
