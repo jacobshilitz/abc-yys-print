@@ -14,6 +14,7 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 import yys_print as Y
 
+VERSION = '1.100'            # raise this whenever the letters change, so Windows and Word see a new version
 U = 350                      # one line space (bottom line -> dotted line) in font units
 UPM = 1000
 STROKE = 0.12 * U            # solid pen width (same ratio as the page)
@@ -180,8 +181,8 @@ def build(family, dotted, lined, path):
     fb.setupHorizontalMetrics(hm)
     fb.setupHorizontalHeader(ascent=ASC, descent=-DESC)
     style = 'Regular'
-    fb.setupNameTable({'familyName': family, 'styleName': style, 'uniqueFontIdentifier': f'{family.replace(" ", "")}-{style};YYS',
-                       'fullName': family, 'psName': family.replace(' ', '') + '-' + style, 'version': 'Version 1.000',
+    fb.setupNameTable({'familyName': family, 'styleName': style, 'uniqueFontIdentifier': f'{family.replace(" ", "")}-{style};{VERSION};YYS',
+                       'fullName': family, 'psName': family.replace(' ', '') + '-' + style, 'version': f'Version {VERSION}',
                        'copyright': 'YYS Print. Credit: YYS', 'designer': 'YYS'})
     fb.setupOS2(sTypoAscender=ASC, sTypoDescender=-DESC, sTypoLineGap=0, usWinAscent=ASC, usWinDescent=DESC,
                 sxHeight=int(U), sCapHeight=int(2*U), achVendID='YYS ', fsType=0)
@@ -190,7 +191,7 @@ def build(family, dotted, lined, path):
     from fontTools.ttLib import newTable
     gasp = newTable('gasp'); gasp.gaspRange = {0xFFFF: 0x000A}   # symmetric smoothing + smoothing, no grid-fitting
     fb.font['gasp'] = gasp
-    fb.setupHead(unitsPerEm=UPM)
+    fb.setupHead(unitsPerEm=UPM, fontRevision=float(VERSION))
     fb.save(path)
 
 

@@ -55,7 +55,8 @@ Other characters (for example é, @ or $) are not in the fonts, so Word shows th
 
 ## Rebuilding the fonts
 
-After a letter is changed in `yys_print.py`, rebuild the four fonts:
+After a letter is changed in `yys_print.py`, raise `VERSION` at the top of `build_fonts.py`
+(for example 1.100 → 1.200) and rebuild the four fonts:
 
 1. Install what the build needs (only the first time):
 
