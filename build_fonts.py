@@ -14,7 +14,7 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 import yys_print as Y
 
-VERSION = '1.100'            # raise this whenever the letters change, so Windows and Word see a new version
+VERSION = '1.200'            # raise this whenever the letters change, so Windows and Word see a new version
 U = 350                      # one line space (bottom line -> dotted line) in font units
 UPM = 1000
 STROKE = 0.12 * U            # solid pen width (same ratio as the page)
@@ -151,7 +151,96 @@ def to_glyph(geom):
     return pen.glyph()
 
 
-def build(family, dotted, lined, path):
+# ---------------- kerning: measured from the letter shapes, so it stays right when a letter changes ----------------
+KERN_BAND = 20          # measure the edges every 20 units of height
+KERN_TOL = 70           # look this far up and down for the nearest ink, so letters never get closer than normal
+KERN_MAX = 300          # never tighten a pair by more than this
+KERN_MIN = 30           # skip tiny changes (round letters measure a few units off)
+KERN_MARK_MAX = 100     # after a small letter, a period or comma moves in at most this much (so "r." never reads "r:")
+
+
+def edge_profiles(geom):
+    """Left and right ink edge of a letter in each height band (None where the band is empty)."""
+    lo, hi = -DESC, ASC
+    bands = list(range(lo, hi, KERN_BAND))
+    left, right = [], []
+    for y in bands:
+        part = geom.intersection(box(-10 * U, y, 20 * U, y + KERN_BAND)) if geom is not None else None
+        if part is None or part.is_empty:
+            left.append(None); right.append(None)
+        else:
+            x0, _, x1, _ = part.bounds
+            left.append(x0); right.append(x1)
+    return left, right
+
+
+def make_kerning():
+    """{(first, second): units} for every pair that sits further apart than two n's.
+
+    For each height, the gap is (space right of the first letter) + (space left of the second);
+    the first letter's edge is taken as the furthest ink within KERN_TOL above or below.
+    A pair is pulled together until its smallest gap equals the n-n gap. Pairs are never pushed apart."""
+    chars = list(Y.G)
+    shape = {c: glyph_shape(c, False) for c in chars}
+    prof = {c: edge_profiles(shape[c][0]) for c in chars}
+    reach = KERN_TOL // KERN_BAND
+    def right_tol(c):
+        r = prof[c][1]; out = []
+        for j in range(len(r)):
+            near = [v for v in r[max(0, j - reach): j + reach + 1] if v is not None]
+            out.append(max(near) if near else None)
+        return out
+    rt = {c: right_tol(c) for c in chars}
+    def min_gap(a, b):
+        adv = shape[a][1]; gaps = [adv - r + l for r, l in zip(rt[a], prof[b][0]) if r is not None and l is not None]
+        return min(gaps) if gaps else None
+    target = min_gap('n', 'n')
+    letters = [c for c in chars if c.isalpha()]
+    firsts = letters + [c for c in chars if c.isdigit()]
+    seconds = letters + ['.', ',']          # quotes, dashes and other marks keep their normal space
+    kern = {}
+    for a in firsts:
+        for b in seconds:
+            if a.isdigit() and b.isalpha(): continue
+            g = min_gap(a, b)
+            if g is None: continue
+            k = max(-KERN_MAX, round(target - g))
+            if a.islower() and b in '.,': k = max(-KERN_MARK_MAX, k)
+            if k <= -KERN_MIN: kern[(a, b)] = int(k)
+    return kern
+
+
+def add_kerning(font, kern, names):
+    """Write the kerning both ways: the modern 'kern' feature (GPOS) and the old kern table older Word reads."""
+    from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
+    from fontTools.ttLib import newTable
+    from fontTools.ttLib.tables._k_e_r_n import KernTable_format_0
+    pairs = {(names[a], names[b]): v for (a, b), v in kern.items()}
+    fea = 'languagesystem DFLT dflt;\nlanguagesystem latn dflt;\nfeature kern {\n' + \
+          ''.join(f'  pos {l} {r} {v};\n' for (l, r), v in sorted(pairs.items())) + '} kern;\n'
+    addOpenTypeFeaturesFromString(font, fea)
+    t = newTable('kern'); t.version = 0
+    sub = KernTable_format_0(); sub.version = 0; sub.coverage = 1; sub.kernTable = dict(pairs)
+    t.kernTables = [sub]; font['kern'] = t
+
+
+def update_page(kern, page='yys_print.html'):
+    """Copy the letters (G) and the kerning (K, in line units) into the YYS Print page, so it matches the fonts."""
+    import json, os, re
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), page)
+    html = open(path, encoding='utf-8', newline='').read()
+    G = {c: {'w': w, 's': [[[round(x, 3), round(y, 3)] for x, y in s] for s in st]} for c, (st, w) in Y.G.items()}
+    K = {a + b: round(v / U, 3) for (a, b), v in sorted(kern.items())}
+    m = re.search(r'const G=\{.*?\};(\r?\n)', html)
+    nl = m.group(1)
+    new = 'const G=' + json.dumps(G, separators=(',', ':')) + ';' + nl + 'const K=' + json.dumps(K, separators=(',', ':')) + ';   // kerning, made by build_fonts.py' + nl
+    html = html[:m.start()] + new + html[m.end():]
+    html = re.sub(r'const K=\{.*?\};[^\r\n]*\r?\n(?=const K=)', '', html)   # drop an older K line if there was one
+    html = re.sub(r'(const K=\{.*?\};[^\r\n]*\r?\n)const K=\{.*?\};[^\r\n]*\r?\n', r'\1', html)
+    open(path, 'w', encoding='utf-8', newline='').write(html)
+
+
+def build(family, dotted, lined, path, kern=None):
     chars = [c for c in Y.G] + [' ']
     names = {c: ('space' if c == ' ' else f'uni{ord(c):04X}') for c in chars}
     order = ['.notdef'] + [names[c] for c in chars]
@@ -192,6 +281,8 @@ def build(family, dotted, lined, path):
     gasp = newTable('gasp'); gasp.gaspRange = {0xFFFF: 0x000A}   # symmetric smoothing + smoothing, no grid-fitting
     fb.font['gasp'] = gasp
     fb.setupHead(unitsPerEm=UPM, fontRevision=float(VERSION))
+    if kern:
+        add_kerning(fb.font, kern, names)
     fb.save(path)
 
 
@@ -199,8 +290,12 @@ if __name__ == '__main__':
     import os
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')
     os.makedirs(out_dir, exist_ok=True)
+    kern = make_kerning()   # one table, measured on the solid letters, used in all four fonts
+    print('kerning pairs:', len(kern))
+    update_page(kern)
+    print('updated yys_print.html (letters and kerning)')
     for fam, dotted, lined in [('ABC YYS Print', False, False), ('ABC YYS Print Dots', True, False),
                                ('ABC YYS Print Lined', False, True), ('ABC YYS Print Dots Lined', True, True)]:
         p = os.path.join(out_dir, f"{fam.replace(' ', '')}.ttf")
-        build(fam, dotted, lined, p)
+        build(fam, dotted, lined, p, kern)
         print('built', p, os.path.getsize(p) // 1024, 'KB')

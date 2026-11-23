@@ -35,6 +35,9 @@ Other characters (for example é, @ or $) are not in the fonts, so Word shows th
 
 ## Tips for Word
 
+- **Turn on kerning** so letters like "Ta", "Yo" and "Jacob" sit close together: select the text,
+  open **Font** (Ctrl+D) → **Advanced**, tick **Kerning for fonts** and set it to **1** pt and above.
+  Word leaves this off unless you tick it. Do it once in your worksheet template and it stays on.
 - Lined fonts: use a big size (36–72) so the kids have room to write.
 - Lined fonts: set line spacing to **Single** so the lines don't get cut.
 - Spaces also have the lines, so a whole line of text stays lined.
@@ -70,7 +73,8 @@ After a letter is changed in `yys_print.py`, raise `VERSION` at the top of `buil
    python build_fonts.py
    ```
 
-   The new fonts are saved into the `fonts` folder, replacing the old ones.
+   The new fonts are saved into the `fonts` folder, replacing the old ones. The build also works out the
+   kerning from the letter shapes and copies the letters and kerning into `yys_print.html`.
 
 3. On each computer that has the old fonts: close Word, open **Settings → Personalization → Fonts**,
    search for **YYS Print**, uninstall each one, then install the new files.
