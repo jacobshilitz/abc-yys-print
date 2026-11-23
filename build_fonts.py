@@ -153,10 +153,16 @@ def to_glyph(geom):
 
 # ---------------- kerning: measured from the letter shapes, so it stays right when a letter changes ----------------
 KERN_BAND = 20          # measure the edges every 20 units of height
-KERN_TOL = 70           # look this far up and down for the nearest ink, so letters never get closer than normal
+KERN_TOL = 170          # look this far up and down for the nearest ink, so letters don't slide under slanted arms (Y, V, W)
+KERN_TOL_SMALL = 70     # small letter + small letter: look only this far, so the j's extra room (kept for q, g, y)
+                        # is taken back after letters without a tail ("aj", "oj")
+KERN_STRENGTH = 0.5     # take out only half the extra space after capitals and before marks: kids write letters side
+                        # by side, so print-style tucking ("Ta", "Ye") looks wrong to them. Small-letter pairs keep it
+                        # all, because those only undo room given on purpose (before j, after q's kick, f's hook).
 KERN_MAX = 300          # never tighten a pair by more than this
 KERN_MIN = 30           # skip tiny changes (round letters measure a few units off)
 KERN_MARK_MAX = 100     # after a small letter, a period or comma moves in at most this much (so "r." never reads "r:")
+KERN_LOOSE = 0.7        # warn about any pair closer than this share of the normal gap (fix it in the letter's width)
 
 
 def edge_profiles(geom):
@@ -179,20 +185,22 @@ def make_kerning():
 
     For each height, the gap is (space right of the first letter) + (space left of the second);
     the first letter's edge is taken as the furthest ink within KERN_TOL above or below.
-    A pair is pulled together until its smallest gap equals the n-n gap. Pairs are never pushed apart."""
+    A letter followed by a letter, period or comma is pulled together until its smallest gap equals the
+    n-n gap. Pairs are never pushed apart; any pair closer than KERN_LOOSE of that gap is reported."""
     chars = list(Y.G)
     shape = {c: glyph_shape(c, False) for c in chars}
     prof = {c: edge_profiles(shape[c][0]) for c in chars}
-    reach = KERN_TOL // KERN_BAND
-    def right_tol(c):
-        r = prof[c][1]; out = []
+    def right_tol(c, tol):
+        r = prof[c][1]; out = []; reach = tol // KERN_BAND
         for j in range(len(r)):
             near = [v for v in r[max(0, j - reach): j + reach + 1] if v is not None]
             out.append(max(near) if near else None)
         return out
-    rt = {c: right_tol(c) for c in chars}
+    rt = {c: right_tol(c, KERN_TOL) for c in chars}
+    rt_small = {c: right_tol(c, KERN_TOL_SMALL) for c in chars}
     def min_gap(a, b):
-        adv = shape[a][1]; gaps = [adv - r + l for r, l in zip(rt[a], prof[b][0]) if r is not None and l is not None]
+        edge = rt_small[a] if (a.islower() and b.islower()) else rt[a]
+        adv = shape[a][1]; gaps = [adv - r + l for r, l in zip(edge, prof[b][0]) if r is not None and l is not None]
         return min(gaps) if gaps else None
     target = min_gap('n', 'n')
     letters = [c for c in chars if c.isalpha()]
@@ -206,7 +214,16 @@ def make_kerning():
             if g is None: continue
             k = max(-KERN_MAX, round(target - g))
             if a.islower() and b in '.,': k = max(-KERN_MARK_MAX, k)
+            if not (a.islower() and b.islower()): k = round(k * KERN_STRENGTH)
             if k <= -KERN_MIN: kern[(a, b)] = int(k)
+    # Pairs that come too close are NOT pushed apart here: in the lined fonts that would leave a gap in the
+    # lines. Give the letter more room in yys_print.py instead. This only warns, using the true ink distance.
+    from shapely import affinity
+    normal = shape['n'][0].distance(affinity.translate(shape['n'][0], shape['n'][1]))
+    tight = [a + b for a in chars for b in chars
+             if shape[a][0].distance(affinity.translate(shape[b][0], shape[a][1] + kern.get((a, b), 0))) < KERN_LOOSE * normal]
+    if tight:
+        print(f'WARNING: {len(tight)} pairs closer than {KERN_LOOSE:.0%} of the normal gap:', ' '.join(tight))
     return kern
 
 
