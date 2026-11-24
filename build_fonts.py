@@ -121,9 +121,10 @@ def lines_shape(adv, lw=LINE_W):
     """The three handwriting lines across one character's width."""
     LINE_W = lw
     parts = [box(0, 2*U - LINE_W/2, adv, 2*U + LINE_W/2), box(0, -LINE_W/2, adv, LINE_W/2)]
-    # dashed middle line: every character starts and ends halfway through a gap, so neighbours join seamlessly
-    period = U * 0.32
-    n = max(1, round(adv / period)); period = adv / n; dash = period / 2
+    # dashed middle line, like the writing workbook: short dashes close together (3 on, 2 off), repeating every
+    # 0.18 of a small letter's height. Every character starts and ends halfway through a gap, so neighbours join.
+    period = U * 0.18
+    n = max(1, round(adv / period)); period = adv / n; dash = period * 0.6
     for k in range(n):
         x0 = k * period + (period - dash) / 2
         parts.append(box(x0, U - LINE_W/2, x0 + dash, U + LINE_W/2))
@@ -263,10 +264,15 @@ def update_page(kern, page='yys_print.html'):
     K = {a + b: round(v / U, 3) for (a, b), v in sorted(kern.items())}
     m = re.search(r'const G=\{.*?\};(\r?\n)', html)
     nl = m.group(1)
-    new = 'const G=' + json.dumps(G, separators=(',', ':')) + ';' + nl + 'const K=' + json.dumps(K, separators=(',', ':')) + ';   // kerning, made by build_fonts.py' + nl
-    html = html[:m.start()] + new + html[m.end():]
-    html = re.sub(r'const K=\{.*?\};[^\r\n]*\r?\n(?=const K=)', '', html)   # drop an older K line if there was one
-    html = re.sub(r'(const K=\{.*?\};[^\r\n]*\r?\n)const K=\{.*?\};[^\r\n]*\r?\n', r'\1', html)
+    g_line = 'const G=' + json.dumps(G, separators=(',', ':')) + ';' + nl
+    k_line = 'const K=' + json.dumps(K, separators=(',', ':')) + ';   // kerning, made by build_fonts.py' + nl
+    html = html[:m.start()] + g_line + html[m.end():]
+    old_k = re.search(r'const K=\{.*?\};[^\r\n]*\r?\n', html)
+    if old_k:                                     # replace the old kerning line
+        html = html[:old_k.start()] + k_line + html[old_k.end():]
+    else:                                         # first time: put it right after the letters
+        g = re.search(r'const G=\{.*?\};\r?\n', html)
+        html = html[:g.end()] + k_line + html[g.end():]
     open(path, 'w', encoding='utf-8', newline='').write(html)
 
 
