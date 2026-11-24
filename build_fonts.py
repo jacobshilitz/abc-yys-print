@@ -117,14 +117,21 @@ def glyph_shape(ch, dotted):
     return unary_union(parts) if parts else None, (w + 2*SIDE) * U
 
 
+DASH = 0.18                  # dashed middle line repeats every 0.18 of a small letter's height (like the workbook)
+
+
+def dash_period(adv):
+    """The dash repeat actually used across a character of this width (stretched so it fits a whole number of times)."""
+    return adv / max(1, round(adv / (U * DASH)))
+
+
 def lines_shape(adv, lw=LINE_W):
     """The three handwriting lines across one character's width."""
     LINE_W = lw
     parts = [box(0, 2*U - LINE_W/2, adv, 2*U + LINE_W/2), box(0, -LINE_W/2, adv, LINE_W/2)]
     # dashed middle line, like the writing workbook: short dashes close together (3 on, 2 off), repeating every
     # 0.18 of a small letter's height. Every character starts and ends halfway through a gap, so neighbours join.
-    period = U * 0.18
-    n = max(1, round(adv / period)); period = adv / n; dash = period * 0.6
+    period = dash_period(adv); n = max(1, round(adv / period)); dash = period * 0.6
     for k in range(n):
         x0 = k * period + (period - dash) / 2
         parts.append(box(x0, U - LINE_W/2, x0 + dash, U + LINE_W/2))
@@ -229,7 +236,13 @@ def make_kerning():
                 if g_out is not None: g = g_out + ROOF_IN * (g - g_out)
             k = max(-KERN_MAX, round(target - g))
             if a.islower() and b in '.,': k = max(-KERN_MARK_MAX, k)
-            if k <= -KERN_MIN: kern[(a, b)] = int(k)
+            # whole dashes only: when two letters overlap, their pieces of the dashed middle line land exactly on
+            # top of each other, so the line stays even in the lined fonts (moves each pair by at most half a dash)
+            p = dash_period(int(round(shape[a][1])))
+            limit = -KERN_MARK_MAX if (a.islower() and b in '.,') else -KERN_MAX
+            k = round(k / p) * p
+            while k < limit - 0.5: k += p          # rounding must not go past the limits above
+            if k <= -KERN_MIN: kern[(a, b)] = int(round(k))
     # Pairs that come too close are NOT pushed apart here: in the lined fonts that would leave a gap in the
     # lines. Give the letter more room in yys_print.py instead. This only warns, using the true ink distance.
     from shapely import affinity
