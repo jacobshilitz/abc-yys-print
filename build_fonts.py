@@ -153,12 +153,14 @@ def to_glyph(geom):
 
 # ---------------- kerning: measured from the letter shapes, so it stays right when a letter changes ----------------
 KERN_BAND = 20          # measure the edges every 20 units of height
-KERN_TOL = 170          # look this far up and down for the nearest ink, so letters don't slide under slanted arms (Y, V, W)
+KERN_TOL = 120          # look this far up and down for the nearest ink
 KERN_TOL_SMALL = 70     # small letter + small letter: look only this far, so the j's extra room (kept for q, g, y)
                         # is taken back after letters without a tail ("aj", "oj")
-KERN_STRENGTH = 0.5     # take out only half the extra space after capitals and before marks: kids write letters side
-                        # by side, so print-style tucking ("Ta", "Ye") looks wrong to them. Small-letter pairs keep it
-                        # all, because those only undo room given on purpose (before j, after q's kick, f's hook).
+# The writing workbook's rule: a letter slides in next to a slanted arm (Vv, Ww, Yy, AV), but not under a flat roof
+# on the top line (Tt, Jj). A flat top bar (T, J, F, 7, 5 ...) casts a "shadow" straight down to the bottom line.
+# Keeping the next letter fully out of the shadow leaves a hole in "Jacob" and "Tash", so it may come ROOF_IN of
+# the way in: 0 = never under the roof, 1 = as close as anything else.
+ROOF_IN = 0.5
 KERN_MAX = 300          # never tighten a pair by more than this
 KERN_MIN = 30           # skip tiny changes (round letters measure a few units off)
 KERN_MARK_MAX = 100     # after a small letter, a period or comma moves in at most this much (so "r." never reads "r:")
@@ -198,10 +200,19 @@ def make_kerning():
         return out
     rt = {c: right_tol(c, KERN_TOL) for c in chars}
     rt_small = {c: right_tol(c, KERN_TOL_SMALL) for c in chars}
-    def min_gap(a, b):
-        edge = rt_small[a] if (a.islower() and b.islower()) else rt[a]
+    rt_roof = {}                              # the same edge, with the shadow of a flat top bar added
+    bands = list(range(-DESC, ASC, KERN_BAND))
+    for c in chars:
+        ends = [max(p[0], q[0]) for s in Y.G[c][0] for p, q in zip(s, s[1:])
+                if abs(p[1] - q[1]) < 0.01 and min(p[1], q[1]) >= 1.95]   # flat bar on the top line
+        if not ends: continue
+        roof = (SIDE + max(ends)) * U + STROKE / 2
+        rt_roof[c] = [max(v or roof, roof) if 0 <= y < 2 * U else v for v, y in zip(rt[c], bands)]
+    def gap_with(edge, a, b):
         adv = shape[a][1]; gaps = [adv - r + l for r, l in zip(edge, prof[b][0]) if r is not None and l is not None]
         return min(gaps) if gaps else None
+    def min_gap(a, b):
+        return gap_with(rt_small[a] if (a.islower() and b.islower()) else rt[a], a, b)
     target = min_gap('n', 'n')
     letters = [c for c in chars if c.isalpha()]
     firsts = letters + [c for c in chars if c.isdigit()]
@@ -212,9 +223,11 @@ def make_kerning():
             if a.isdigit() and b.isalpha(): continue
             g = min_gap(a, b)
             if g is None: continue
+            if a in rt_roof and not (a.islower() and b.islower()):   # a roof letter: only ROOF_IN of the way under it
+                g_out = gap_with(rt_roof[a], a, b)
+                if g_out is not None: g = g_out + ROOF_IN * (g - g_out)
             k = max(-KERN_MAX, round(target - g))
             if a.islower() and b in '.,': k = max(-KERN_MARK_MAX, k)
-            if not (a.islower() and b.islower()): k = round(k * KERN_STRENGTH)
             if k <= -KERN_MIN: kern[(a, b)] = int(k)
     # Pairs that come too close are NOT pushed apart here: in the lined fonts that would leave a gap in the
     # lines. Give the letter more room in yys_print.py instead. This only warns, using the true ink distance.
